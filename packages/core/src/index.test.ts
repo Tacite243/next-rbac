@@ -94,4 +94,44 @@ describe('RbacEngine - Scénario Complet', () => {
             });
         }).toThrowError(/Cycle d'héritage détecté/);
     });
+
+    it('devrait lever une erreur avec authorize() en cas d’échec, ou s’exécuter sans retour en cas de succès', () => {
+        const viewer = { id: 1, roles: ['viewer'] };
+
+        // Succès silencieux
+        expect(() => auth.authorize(viewer, 'read', 'posts')).not.toThrow();
+
+        // Doit lever une exception AuthorizationError
+        expect(() => auth.authorize(viewer, 'create', 'posts')).toThrow();
+    });
+
+    it('devrait filtrer récursivement une structure de menu', () => {
+        const viewer = { id: 1, roles: ['viewer'] };
+        const admin = { id: 3, roles: ['admin'] };
+
+        const menu = [
+            { label: 'Accueil', href: '/' },
+            { label: 'Mes Articles', href: '/posts', permission: 'posts.read' },
+            {
+                label: 'Administration',
+                href: '/admin',
+                permission: 'users.manage',
+                children: [
+                    { label: 'Gérer les utilisateurs', href: '/admin/users', permission: 'users.manage' },
+                    { label: 'Lecture simple', href: '/admin/stats', permission: 'posts.read' }
+                ]
+            },
+        ];
+
+        // Pour un simple viewer
+        const filteredForViewer = auth.filterMenu(viewer, menu);
+        expect(filteredForViewer).toHaveLength(2); // Accueil + Mes Articles
+        expect(filteredForViewer.find(m => m.label === 'Administration')).toBeUndefined();
+
+        // Pour un administrateur
+        const filteredForAdmin = auth.filterMenu(admin, menu);
+        expect(filteredForAdmin).toHaveLength(3); // Tout le menu
+        const adminMenu = filteredForAdmin.find(m => m.label === 'Administration');
+        expect(adminMenu?.children).toHaveLength(2); // Les deux sous-menus de l'admin sont visibles
+    });
 });

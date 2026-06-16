@@ -70,3 +70,14 @@ export type ResourcePolicies<TUser extends BaseUser = any> = {
  * Structure interne optimisée pour la vérification rapide en O(1) après compilation.
  */
 export type CompiledPermissions = Map<string, Map<string, Set<string>>>;
+
+/**
+ * Représente un élément du menu de navigation pour l'autorisation visuelle.
+ */
+export interface MenuItem {
+    /** Permission au format "ressource.action" ou "ressource:action" (ex: "posts.read") */
+    permission?: string;
+    /** Sous-menus récursifs */
+    children?: MenuItem[];
+    [key: string]: any;
+}

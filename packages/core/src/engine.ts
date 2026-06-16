@@ -4,8 +4,21 @@ import {
     RoleDefinition,
     AuthConfig,
     CompiledPermissions,
-    PolicyFn
+    PolicyFn,
+    MenuItem
 } from './types.js';
+
+
+
+/**
+ * Erreur spécifique levée en cas de refus d'accès par la méthode authorize().
+ */
+export class AuthorizationError extends Error {
+    constructor(message = "Accès non autorisé") {
+        super(message);
+        this.name = "AuthorizationError";
+    }
+}
 
 export class RbacEngine<
     TResources extends ResourceConfig,
@@ -19,21 +32,16 @@ export class RbacEngine<
         this.compile();
     }
 
-    /**
-     * Compile l'arbre d'héritage des permissions pour un accès en O(1) à l'exécution.
-     */
     private compile(): void {
         const roles = this.config.roles;
         const visited = new Set<string>();
         const resolving = new Set<string>();
 
         const resolveRolePermissions = (roleName: string): Map<string, Set<string>> => {
-            // Détection de cycle d'héritage
             if (resolving.has(roleName)) {
                 throw new Error(`Cycle d'héritage détecté impliquant le rôle : "${roleName}"`);
             }
 
-            // Si le rôle est déjà résolu, on retourne sa carte de permissions compilée
             if (visited.has(roleName)) {
                 return this.compiledPermissions.get(roleName) || new Map();
             }
@@ -48,7 +56,6 @@ export class RbacEngine<
                 return mergedPermissions;
             }
 
-            // 1. Résoudre d'abord les permissions héritées des rôles parents
             if (roleDef.extends) {
                 const parents = Array.isArray(roleDef.extends) ? roleDef.extends : [roleDef.extends];
                 for (const parent of parents) {
@@ -65,7 +72,6 @@ export class RbacEngine<
                 }
             }
 
-            // 2. Fusionner avec les permissions propres au rôle actuel
             const permissions = roleDef.permissions;
             for (const [resource, actions] of Object.entries(permissions)) {
                 if (!mergedPermissions.has(resource)) {
@@ -79,7 +85,6 @@ export class RbacEngine<
                 }
             }
 
-            // Enregistrer le rôle compilé
             this.compiledPermissions.set(roleName, mergedPermissions);
             resolving.delete(roleName);
             visited.add(roleName);
@@ -87,15 +92,11 @@ export class RbacEngine<
             return mergedPermissions;
         };
 
-        // Compiler chaque rôle défini dans la configuration
         for (const roleName of Object.keys(roles)) {
             resolveRolePermissions(roleName);
         }
     }
 
-    /**
-     * Enregistre une règle métier dynamique (Policy) pour l'ABAC.
-     */
     public definePolicy<TKey extends keyof TResources>(
         resource: TKey & string,
         policies: Record<TResources[TKey][number] | string, PolicyFn<TUser, any>>
@@ -109,9 +110,6 @@ export class RbacEngine<
         }
     }
 
-    /**
-     * Évalue si l'utilisateur possède l'accès requis.
-     */
     public can<TKey extends keyof TResources & string>(
         user: TUser,
         action: TResources[TKey][number] | "*",
@@ -120,7 +118,6 @@ export class RbacEngine<
     ): boolean {
         if (!user) return false;
 
-        // Détermination du type de ressource (si c'est une chaîne de caractères ou un objet)
         let resourceType: string;
         let resourceData: any = null;
 
@@ -139,22 +136,18 @@ export class RbacEngine<
 
         if (!resourceType) return false;
 
-        // Récupération des rôles de l'utilisateur
         const userRoles = this.config.getUserRoles(user);
         let hasRbacAccess = false;
 
-        // Vérification de l'accès RBAC parmi tous les rôles compilés de l'utilisateur
         for (const role of userRoles) {
             const rolePerms = this.compiledPermissions.get(role as string);
             if (!rolePerms) continue;
 
-            // Cas 1 : Super Admin avec wildcard total sur tout le système
             if (rolePerms.has('*') && rolePerms.get('*')?.has('*')) {
                 hasRbacAccess = true;
                 break;
             }
 
-            // Cas 2 : Accès direct à la ressource demandée (ou wildcard sur la ressource)
             const allowedActions = rolePerms.get(resourceType);
             if (allowedActions) {
                 if (allowedActions.has('*') || allowedActions.has(action as string)) {
@@ -164,31 +157,20 @@ export class RbacEngine<
             }
         }
 
-        // Si le RBAC refuse l'accès, inutile d'aller plus loin
         if (!hasRbacAccess) return false;
-
-        // Si nous évaluons une chaîne brute sans données, l'accès RBAC suffit
         if (resourceData === null) return true;
 
-        // Cas 3 : Vérification de la règle ABAC (Policy) associée à cette action/ressource
         const resourcePolicies = this.policies.get(resourceType);
         if (resourcePolicies) {
             const policyFn = resourcePolicies.get(action as string);
             if (policyFn) {
-                // Exécution de la policy
-                const result = policyFn(user, resourceData, context);
-                // Note : pour préserver le caractère synchrone de `can`, nous gérons uniquement 
-                // les retours synchrones ici. Une méthode asynchrone dédiée pourra être ajoutée si nécessaire.
-                return result === true;
+                return policyFn(user, resourceData, context) === true;
             }
         }
 
         return true;
     }
 
-    /**
-     * Négation stricte de la méthode `can`.
-     */
     public cannot<TKey extends keyof TResources & string>(
         user: TUser,
         action: TResources[TKey][number] | "*",
@@ -197,11 +179,52 @@ export class RbacEngine<
     ): boolean {
         return !this.can(user, action, resourceOrData, context);
     }
+
+    /**
+     * Valide l'accès et lève une exception en cas d'échec.
+     */
+    public authorize<TKey extends keyof TResources & string>(
+        user: TUser,
+        action: TResources[TKey][number] | "*",
+        resourceOrData: TKey | any,
+        context?: any
+    ): void {
+        if (this.cannot(user, action, resourceOrData, context)) {
+            throw new AuthorizationError();
+        }
+    }
+
+    /**
+     * Filtre de manière récursive un menu pour ne conserver que les liens autorisés.
+     */
+    public filterMenu<T extends MenuItem>(user: TUser, menu: T[]): T[] {
+        return menu
+            .filter((item) => {
+                // S'il n'y a pas de contrainte de permission, le menu est affiché par défaut
+                if (!item.permission) return true;
+
+                // Découpe de la permission (support de "resource.action" ou "resource:action")
+                const delimiter = item.permission.includes('.') ? '.' : ':';
+                const parts = item.permission.split(delimiter);
+
+                if (parts.length !== 2) return false;
+                const [resource, action] = parts;
+
+                return this.can(user, action as any, resource as any);
+            })
+            .map((item) => {
+                // Filtrage récursif des sous-menus (s'il y en a)
+                if (item.children && item.children.length > 0) {
+                    return {
+                        ...item,
+                        children: this.filterMenu(user, item.children as T[]),
+                    };
+                }
+                return item;
+            });
+    }
 }
 
-/**
- * Point d'entrée de l'API publique pour instancier le moteur.
- */
 export function createAuth<
     TResources extends ResourceConfig,
     TRoles extends Record<string, RoleDefinition<TResources, Extract<keyof TRoles, string>>>,

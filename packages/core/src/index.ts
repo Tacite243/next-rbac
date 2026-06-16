@@ -1,2 +1,2 @@
-export { createAuth, RbacEngine } from './engine.js';
+export { createAuth, RbacEngine, AuthorizationError } from './engine.js';
 export * from './types.js';
