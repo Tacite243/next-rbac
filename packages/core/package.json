@@ -1,0 +1,40 @@
+{
+    "name": "@next-rbac/core",
+    "version": "0.1.0",
+    "description": "Ultra-performant, lightweight and framework-agnostic authorization engine",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "test": "vitest run --passWithNoTests",
+        "test:watch": "vitest",
+        "clean": "rm -rf dist node_modules"
+    },
+    "keywords": [
+        "rbac",
+        "abac",
+        "authorization",
+        "security",
+        "permissions",
+        "typescript",
+        "nextjs"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "vitest": "^1.6.0"
+    }
+}

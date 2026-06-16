@@ -1,3 +1,10 @@
 packages:
   - 'packages/*'
   - 'examples/*'
+# allowBuilds:
+#   esbuild: false
+
+
+# Autoriser la compilation d'esbuild (requis par tsup)
+onlyBuiltDependencies:
+  - esbuild
