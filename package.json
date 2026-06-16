@@ -5,14 +5,20 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "pnpm --filter \"./packages/**\" build",
-    "test": "pnpm --filter \"./packages/**\" test",
-    "lint": "pnpm --filter \"./packages/**\" lint",
-    "clean": "pnpm -r exec rm -rf dist .turbo node_modules"
+    "clean": "pnpm -r exec rm -rf dist .turbo node_modules",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "typescript": "^5.4.5",
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
     "prettier": "^3.2.5",
-    "tsup": "^8.0.2"
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5"
   }
 }
