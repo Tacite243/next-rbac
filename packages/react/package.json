@@ -1,0 +1,42 @@
+{
+  "name": "@next-rbac/react",
+  "version": "0.1.0",
+  "description": "React integration for next-rbac with type-safe hooks and components",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist node_modules"
+  },
+  "keywords": [
+    "rbac",
+    "abac",
+    "react",
+    "authorization",
+    "security"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "dependencies": {
+    "@next-rbac/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0"
+  }
+}
