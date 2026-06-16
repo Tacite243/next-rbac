@@ -1,5 +1,6 @@
-import React, { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useAuth } from './hooks.js';
+
 
 export interface AuthComponentProps {
     action: string;
