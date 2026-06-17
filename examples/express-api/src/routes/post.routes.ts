@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import { postController } from '../controllers/post.controller.js';
 import { authorize } from '../security/rbac.js';
 import { mockPosts } from '../models/post.model.js';
 
-const router = Router();
+const router: Router = Router();
 
 // 1. Lire les articles : Accessible au rôle 'viewer' (et par héritage aux rôles 'editor' et 'admin')
 router.get('/', authorize({ action: 'read', resource: 'posts' }), postController.getAll);
@@ -13,12 +13,11 @@ router.get('/:id', authorize({ action: 'read', resource: 'posts' }), postControl
 router.post('/', authorize({ action: 'create', resource: 'posts' }), postController.create);
 
 // 3. Modifier un article : Nécessite le droit RBAC 'update' ET valide la règle ABAC d'auteur.
-// Nous extrayons dynamiquement l'article depuis la base de données fictive en fonction du paramètre de route :
 router.put(
     '/:id',
     authorize({
         action: 'update',
-        resource: (req) => mockPosts.find(p => p.id === req.params.id) || 'posts'
+        resource: (req: Request) => mockPosts.find(p => p.id === req.params.id) || 'posts'
     }),
     postController.update
 );
@@ -28,7 +27,7 @@ router.delete(
     '/:id',
     authorize({
         action: 'delete',
-        resource: (req) => mockPosts.find(p => p.id === req.params.id) || 'posts'
+        resource: (req: Request) => mockPosts.find(p => p.id === req.params.id) || 'posts'
     }),
     postController.delete
 );
