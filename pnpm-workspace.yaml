@@ -1,10 +1,8 @@
 packages:
   - 'packages/*'
   - 'examples/*'
-# allowBuilds:
-#   esbuild: false
 
-
-# Autoriser la compilation d'esbuild (requis par tsup)
-onlyBuiltDependencies:
-  - esbuild
+# Autoriser l'exécution des scripts de compilation natifs
+allowBuilds:
+  '@nestjs/core': true
+  'esbuild': true
