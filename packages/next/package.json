@@ -1,0 +1,46 @@
+{
+    "name": "@next-rbac/next",
+    "version": "0.1.0",
+    "description": "Next.js integration for next-rbac supporting App Router, Server Actions, and Middleware",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "clean": "rm -rf dist node_modules"
+    },
+    "keywords": [
+        "rbac",
+        "abac",
+        "nextjs",
+        "middleware",
+        "server-actions",
+        "authorization"
+    ],
+    "author": "",
+    "license": "MIT",
+    "peerDependencies": {
+        "next": ">=13.0.0"
+    },
+    "dependencies": {
+        "@next-rbac/core": "workspace:*"
+    },
+    "devDependencies": {
+        "next": "^14.2.0",
+        "react": "^18.3.0",
+        "@types/react": "^18.3.0",
+        "@types/node": "^20.12.7"
+    }
+}
