@@ -2,7 +2,7 @@ packages:
   - 'packages/*'
   - 'examples/*'
 
-# Autoriser l'exécution des scripts de compilation natifs
 allowBuilds:
   '@nestjs/core': true
   'esbuild': true
+  '@scarf/scarf': false
