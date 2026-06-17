@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { mockAuthMiddleware } from './middlewares/mock-auth.middleware.js';
@@ -6,7 +6,7 @@ import { errorHandler } from './middlewares/error.middleware.js';
 import { swaggerSpec } from './security/swagger.js';
 import apiRoutes from './routes/index.js';
 
-const app = express();
+const app: Express = express();
 
 app.use(cors());
 app.use(express.json());
@@ -18,7 +18,7 @@ app.use(mockAuthMiddleware);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Route de bienvenue publique pour s'assurer que l'API tourne
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     res.json({
         message: 'Bienvenue sur l\'API de démonstration next-rbac !',
         documentation: 'Accédez à la documentation interactive Swagger sur http://localhost:4000/api-docs',
