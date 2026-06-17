@@ -1,0 +1,48 @@
+{
+    "name": "@next-rbac/nest",
+    "version": "0.1.0",
+    "description": "NestJS integration for next-rbac including Guards and Custom Decorators",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "clean": "rm -rf dist node_modules"
+    },
+    "keywords": [
+        "rbac",
+        "abac",
+        "nestjs",
+        "guard",
+        "decorator",
+        "authorization",
+        "security"
+    ],
+    "author": "",
+    "license": "MIT",
+    "peerDependencies": {
+        "@nestjs/common": ">=9.0.0",
+        "@nestjs/core": ">=9.0.0",
+        "reflect-metadata": ">=0.1.13"
+    },
+    "dependencies": {
+        "@next-rbac/core": "workspace:*"
+    },
+    "devDependencies": {
+        "@nestjs/common": "^10.3.8",
+        "@nestjs/core": "^10.3.8",
+        "reflect-metadata": "^0.2.2"
+    }
+}
