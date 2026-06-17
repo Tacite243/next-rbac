@@ -19,6 +19,8 @@
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
+        "lint": "prettier --check \"src/**/*.ts\"",
+        "lint:fix": "prettier --write \"src/**/*.ts\"",
         "clean": "rm -rf dist node_modules"
     },
     "keywords": [
